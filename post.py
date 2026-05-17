@@ -149,11 +149,6 @@ def run_input_mode():
     print(post_text)
     print("----------------------\n")
 
-    confirm = input("Post this? (yes/no): ").strip().lower()
-    if confirm != "yes":
-        print("Cancelled. Files left in input folder.")
-        return
-
     post_id = post_to_linkedin(post_text, PERSONAL_TOKEN, PERSON_URN, asset_urn)
     if post_id:
         log_post("personal", pillar, post_text, has_image=bool(asset_urn), post_id=post_id)
