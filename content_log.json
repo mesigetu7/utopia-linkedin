@@ -1,0 +1,28 @@
+{
+  "posts": [
+    {
+      "date": "2026-05-16 21:26",
+      "account": "personal",
+      "pillar": "engaging_others_work",
+      "hook": "Driving through Addis Ababa's busy streets, you see construction sites everywher",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7461482307124871168"
+    },
+    {
+      "date": "2026-05-16 21:30",
+      "account": "personal",
+      "pillar": "field_notes",
+      "hook": "Driving through the streets of Addis Ababa, it's hard not to notice the mix of t",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7461483302814695424"
+    },
+    {
+      "date": "2026-05-16 21:46",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Walk into almost any new building in Addis right now and look closely at the fac",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7461487160567754752"
+    }
+  ]
+}

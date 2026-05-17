@@ -1,0 +1,42 @@
+name: Utopia LinkedIn Auto-Post
+
+on:
+  schedule:
+    # Times are in UTC. Ethiopia is UTC+3.
+    - cron: '0 5 * * 2'   # Tuesday 8:00 AM Ethiopia time
+    - cron: '0 16 * * 4'  # Thursday 7:00 PM Ethiopia time
+    - cron: '0 6 * * 6'   # Saturday 9:00 AM Ethiopia time
+    - cron: '0 15 * * 5'  # Friday 6:00 PM Ethiopia time
+  workflow_dispatch:        # lets you trigger a post manually from GitHub
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Run the posting script
+        env:
+          LINKEDIN_PERSONAL_TOKEN: ${{ secrets.LINKEDIN_PERSONAL_TOKEN }}
+          LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python post.py smart
+
+      - name: Save changes back to repository
+        run: |
+          git config user.name "utopia-bot"
+          git config user.email "bot@utopia.local"
+          git add content_log.json queue/ input/
+          git diff --staged --quiet || git commit -m "Auto-post update"
+          git push
