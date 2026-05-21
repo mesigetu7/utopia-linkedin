@@ -52,12 +52,15 @@ def already_posted_today(account):
 
 
 def get_account_creds(account):
-    """Return (token, author_urn) for the given account."""
+    """Return (token, author_urn) for the given account.
+    Both accounts use the personal token — company posts use the org URN.
+    The personal token works for company pages when the user is a page admin.
+    """
     if account == "company":
-        token = COMPANY_TOKEN
+        token = PERSONAL_TOKEN
         urn = f"urn:li:organization:{COMPANY_ID}" if COMPANY_ID else None
         if not token or not urn:
-            print("ERROR: LINKEDIN_COMPANY_TOKEN or LINKEDIN_COMPANY_ID not set.")
+            print("ERROR: LINKEDIN_PERSONAL_TOKEN or LINKEDIN_COMPANY_ID not set.")
             sys.exit(1)
     else:
         token = PERSONAL_TOKEN
