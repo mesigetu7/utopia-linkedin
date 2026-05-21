@@ -3,20 +3,43 @@ name: Utopia LinkedIn Auto-Post
 on:
   schedule:
     # Times are in UTC. Ethiopia is UTC+3.
-    - cron: '0 5 * * 2'   # Tuesday 8:00 AM Ethiopia time
-    - cron: '0 16 * * 4'  # Thursday 7:00 PM Ethiopia time
-    - cron: '0 6 * * 6'   # Saturday 9:00 AM Ethiopia time
-    - cron: '0 15 * * 5'  # Friday 6:00 PM Ethiopia time
-  workflow_dispatch:        # lets you trigger a post manually from GitHub
+    - cron: '0 5 * * 2'   # Tuesday 8:00 AM EAT
+    - cron: '0 16 * * 4'  # Thursday 7:00 PM EAT
+    - cron: '0 15 * * 5'  # Friday 6:00 PM EAT
+    - cron: '0 6 * * 6'   # Saturday 9:00 AM EAT
+
+  workflow_dispatch:
+    inputs:
+      account:
+        description: 'Account to post to (personal or company)'
+        required: false
+        default: 'personal'
+        type: choice
+        options:
+          - personal
+          - company
+      mode:
+        description: 'Posting mode'
+        required: false
+        default: 'smart'
+        type: choice
+        options:
+          - smart
+          - queue
+          - auto
+          - input
 
 jobs:
   post:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,13 +53,20 @@ jobs:
         env:
           LINKEDIN_PERSONAL_TOKEN: ${{ secrets.LINKEDIN_PERSONAL_TOKEN }}
           LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
+          LINKEDIN_COMPANY_TOKEN: ${{ secrets.LINKEDIN_COMPANY_TOKEN }}
+          LINKEDIN_COMPANY_ID: ${{ secrets.LINKEDIN_COMPANY_ID }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        run: python post.py smart
+        run: |
+          ACCOUNT="${{ github.event.inputs.account || 'personal' }}"
+          MODE="${{ github.event.inputs.mode || 'smart' }}"
+          echo "Running: python post.py $MODE $ACCOUNT"
+          python post.py $MODE $ACCOUNT
 
       - name: Save changes back to repository
         run: |
           git config user.name "utopia-bot"
           git config user.email "bot@utopia.local"
+          git pull origin main --rebase
           git add content_log.json queue/ input/
-          git diff --staged --quiet || git commit -m "Auto-post update"
+          git diff --staged --quiet || git commit -m "Auto-post: $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push

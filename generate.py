@@ -102,10 +102,17 @@ def get_last_pillar(log, account):
     return posts[0].get("pillar")
 
 def choose_pillar(account, log):
-    last = get_last_pillar(log, account)
-    pillars = PERSONAL_PILLARS if account == "personal" else COMPANY_PILLARS
-    available = [p for p in pillars if p != last]
     import random
+    pillars = PERSONAL_PILLARS if account == "personal" else COMPANY_PILLARS
+    # Avoid the last 2 pillars used for this account
+    posts = sorted(
+        [p for p in log["posts"] if p["account"] == account],
+        key=lambda x: x["date"], reverse=True
+    )
+    recent = {p.get("pillar") for p in posts[:2]}
+    available = [p for p in pillars if p not in recent]
+    if not available:
+        available = pillars  # fallback if all pillars recently used
     return random.choice(available)
 
 def generate_post(account, pillar=None, raw_input=None, image_description=None):
