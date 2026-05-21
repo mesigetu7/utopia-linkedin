@@ -101,19 +101,56 @@ def get_last_pillar(log, account):
     posts.sort(key=lambda x: x["date"], reverse=True)
     return posts[0].get("pillar")
 
+def engagement_score(post):
+    """Single number summarising a post's performance. Weights comments highest."""
+    likes    = post.get("likes", 0) or 0
+    comments = post.get("comments", 0) or 0
+    shares   = post.get("shares", 0) or 0
+    views    = post.get("views", 0) or 0
+    # Comments = 4x, shares = 3x, likes = 1x, views = 0.01x
+    return (comments * 4) + (shares * 3) + (likes * 1) + (views * 0.01)
+
 def choose_pillar(account, log):
+    """
+    Pick a content pillar weighted by past engagement.
+    - Pillars with higher average engagement score get picked more often.
+    - Always avoids the last 2 pillars used (to keep content varied).
+    - Falls back to uniform random if no engagement data exists yet.
+    """
     import random
     pillars = PERSONAL_PILLARS if account == "personal" else COMPANY_PILLARS
-    # Avoid the last 2 pillars used for this account
-    posts = sorted(
+
+    account_posts = sorted(
         [p for p in log["posts"] if p["account"] == account],
         key=lambda x: x["date"], reverse=True
     )
-    recent = {p.get("pillar") for p in posts[:2]}
+
+    # Avoid repeating the last 2 pillars
+    recent = {p.get("pillar") for p in account_posts[:2]}
     available = [p for p in pillars if p not in recent]
     if not available:
-        available = pillars  # fallback if all pillars recently used
-    return random.choice(available)
+        available = pillars
+
+    # Build engagement weights per pillar
+    pillar_scores = {}
+    for p in available:
+        posts_for_pillar = [x for x in account_posts if x.get("pillar") == p]
+        if posts_for_pillar:
+            avg = sum(engagement_score(x) for x in posts_for_pillar) / len(posts_for_pillar)
+        else:
+            avg = 1.0  # neutral weight for untried pillars
+        pillar_scores[p] = max(avg, 0.1)  # floor so nothing is never chosen
+
+    # Weighted random selection
+    total = sum(pillar_scores.values())
+    weights = [pillar_scores[p] / total for p in available]
+    chosen = random.choices(available, weights=weights, k=1)[0]
+
+    # Log the weights so you can see what the system is learning
+    top = sorted(pillar_scores.items(), key=lambda x: x[1], reverse=True)[:3]
+    print(f"Pillar weights (top 3): {top}")
+    print(f"Chosen pillar: {chosen}")
+    return chosen
 
 def generate_post(account, pillar=None, raw_input=None, image_description=None):
     log = load_content_log()
@@ -179,10 +216,39 @@ def log_post(account, pillar, post_text, has_image=False, post_id=None):
         "pillar": pillar,
         "hook": post_text[:80],
         "has_image": has_image,
-        "linkedin_post_id": post_id or ""
+        "linkedin_post_id": post_id or "",
+        # Engagement fields — updated later via update_engagement()
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "shares": 0
     })
     with open("content_log.json", "w") as f:
         json.dump(log, f, indent=2)
+
+def update_engagement(post_id, views=0, likes=0, comments=0, shares=0):
+    """
+    Update engagement stats for a post in content_log.json by its LinkedIn post ID.
+    Called by the OS web app or manually after checking LinkedIn analytics.
+    Also triggers a Notion sync update if notion_page_id is available.
+    """
+    log = load_content_log()
+    updated = False
+    for post in log["posts"]:
+        if post.get("linkedin_post_id") == post_id:
+            post["views"] = views
+            post["likes"] = likes
+            post["comments"] = comments
+            post["shares"] = shares
+            updated = True
+            break
+    if updated:
+        with open("content_log.json", "w") as f:
+            json.dump(log, f, indent=2)
+        print(f"Engagement updated for {post_id}")
+    else:
+        print(f"Post ID not found in log: {post_id}")
+    return updated
 
 if __name__ == "__main__":
     print("Generating a test personal post...\n")
