@@ -7,6 +7,7 @@ from datetime import date
 from dotenv import load_dotenv
 from generate import generate_post, log_post, load_content_log
 from image_upload import upload_image
+from notion_sync import log_post_to_notion
 
 load_dotenv()
 
@@ -173,6 +174,8 @@ def run_queue_mode(account="personal"):
 
     if post_id:
         log_post(account, "queued", post_text, has_image=False, post_id=post_id)
+        log_post_to_notion(account, "queued", post_text, has_image=False,
+                           post_id=post_id, queue_file=os.path.basename(next_post_file))
         move_file(next_post_file, queue_posted_folder(account))
         print("Queued post published.")
     else:
@@ -258,6 +261,7 @@ def run_autopilot_mode(account="personal"):
 
     if post_id:
         log_post(account, pillar, post_text, has_image=False, post_id=post_id)
+        log_post_to_notion(account, pillar, post_text, has_image=False, post_id=post_id)
         print("Autopilot post complete.")
     else:
         print(f"ERROR: LinkedIn post failed for [{account}].")

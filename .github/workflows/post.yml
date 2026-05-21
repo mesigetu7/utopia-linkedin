@@ -47,7 +47,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install requests python-dotenv
+        run: pip install requests python-dotenv notion-client
 
       - name: Run the posting script
         env:
@@ -56,6 +56,8 @@ jobs:
           LINKEDIN_COMPANY_TOKEN: ${{ secrets.LINKEDIN_COMPANY_TOKEN }}
           LINKEDIN_COMPANY_ID: ${{ secrets.LINKEDIN_COMPANY_ID }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: |
           ACCOUNT="${{ github.event.inputs.account || 'personal' }}"
           MODE="${{ github.event.inputs.mode || 'smart' }}"
