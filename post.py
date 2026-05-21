@@ -176,7 +176,10 @@ def run_queue_mode(account="personal"):
         move_file(next_post_file, queue_posted_folder(account))
         print("Queued post published.")
     else:
-        print("ERROR: LinkedIn post failed. Exiting with error.")
+        print(f"ERROR: LinkedIn post failed for [{account}]. Check token scopes.")
+        if account == "company":
+            print("NOTE: Company posts require w_organization_social scope. Skipping without crash.")
+            return
         sys.exit(1)
 
 
@@ -257,7 +260,10 @@ def run_autopilot_mode(account="personal"):
         log_post(account, pillar, post_text, has_image=False, post_id=post_id)
         print("Autopilot post complete.")
     else:
-        print("ERROR: LinkedIn post failed. Exiting with error.")
+        print(f"ERROR: LinkedIn post failed for [{account}].")
+        if account == "company":
+            print("Company posting skipped — check token/scope when available.")
+            return
         sys.exit(1)
 
 
