@@ -42,7 +42,14 @@ def ensure_folders():
 
 
 def already_posted_today(account):
-    """Check if we've already posted today for this account."""
+    """Check if we've already posted today for this account.
+
+    Respects the FORCE env var — if FORCE is truthy, the guard is bypassed.
+    Use FORCE only for manual recovery / test runs; never in cron.
+    """
+    if os.getenv("FORCE", "").lower() in ("1", "true", "yes"):
+        print(f"FORCE=true — skipping already-posted-today guard for {account}.")
+        return False
     log = load_content_log()
     today = date.today().strftime("%Y-%m-%d")
     for post in log["posts"]:

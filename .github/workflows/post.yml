@@ -28,6 +28,14 @@ on:
           - queue
           - auto
           - input
+      force:
+        description: 'Skip the once-per-day guard (use sparingly)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   post:
@@ -58,17 +66,33 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          FORCE: ${{ github.event.inputs.force || 'false' }}
         run: |
           ACCOUNT="${{ github.event.inputs.account || 'personal' }}"
           MODE="${{ github.event.inputs.mode || 'smart' }}"
-          echo "Running: python post.py $MODE $ACCOUNT"
+          echo "Running: python post.py $MODE $ACCOUNT (FORCE=$FORCE)"
           python post.py $MODE $ACCOUNT
 
       - name: Save changes back to repository
+        if: always()
         run: |
           git config user.name "utopia-bot"
           git config user.email "bot@utopia.local"
-          git pull origin main --rebase
-          git add content_log.json queue/ input/
-          git diff --staged --quiet || git commit -m "Auto-post: $(date -u '+%Y-%m-%d %H:%M UTC')"
-          git push
+
+          # Stage and commit FIRST (so local file moves don't block the rebase).
+          git add content_log.json queue/ input/ || true
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-post: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          else
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          # Now rebase on top of remote and push, with one retry.
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            echo "Push attempt $attempt failed. Retrying in 5s..."
+            sleep 5
+          done
+          echo "ERROR: Could not push committed changes after 3 attempts."
+          exit 1
