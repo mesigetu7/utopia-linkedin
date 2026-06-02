@@ -91,6 +91,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-02 05:05",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Every serious building conversation in Ethiopia right now eventually arrives at ",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7467441121984417792",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
