@@ -139,6 +139,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-09 14:03",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Durability is the most underrated word in Ethiopian construction.\n\nEveryone talk",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7470113335405891584",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
