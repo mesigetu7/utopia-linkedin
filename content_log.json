@@ -163,6 +163,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-12 21:18",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "The first question is almost always the same.\n\n\"How much does it cost?\"\n\nNot \"wh",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7471310077933707264",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
