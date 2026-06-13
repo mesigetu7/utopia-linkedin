@@ -175,6 +175,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-13 12:09",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Walk past any major construction site in Addis right now and count the cranes.\n\n",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7471534110319067136",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
