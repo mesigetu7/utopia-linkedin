@@ -187,6 +187,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-16 18:59",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Something changes when an architect sees the material in person for the first ti",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7472724587252850688",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
