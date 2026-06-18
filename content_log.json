@@ -199,6 +199,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-18 23:03",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "There's a specific moment in every luxury project when the vision starts to shri",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7473510846590259200",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
