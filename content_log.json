@@ -223,6 +223,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-20 12:15",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Ethiopian hotels are in an interesting moment right now.\n\nInternational brands a",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7474072476650737664",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
