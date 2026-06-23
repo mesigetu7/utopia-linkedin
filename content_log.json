@@ -235,6 +235,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-23 08:30",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Most construction decisions in Ethiopia are made by the person holding the budge",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7475103086471151617",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
