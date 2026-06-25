@@ -247,6 +247,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-25 18:04",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "Street furniture tells you a lot about how a city thinks about its own future.\n\n",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7475972237901168640",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
