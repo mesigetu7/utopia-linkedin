@@ -271,6 +271,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-27 08:25",
+      "account": "personal",
+      "pillar": "queued",
+      "hook": "The detail that separates a good building from a great one is almost never visib",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7476551236297662464",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
