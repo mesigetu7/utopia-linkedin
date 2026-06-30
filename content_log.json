@@ -283,6 +283,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-06-30 08:32",
+      "account": "personal",
+      "pillar": "design_opinion",
+      "hook": "Walk into a luxury hotel lobby in Addis Ababa. Marble floors. High ceilings. And",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7477640070502494208",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
