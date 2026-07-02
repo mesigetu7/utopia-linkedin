@@ -295,6 +295,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-07-02 17:31",
+      "account": "personal",
+      "pillar": "archetype_follower",
+      "hook": "Walk into a newly built government office in Addis Ababa. Notice the materials u",
+      "has_image": false,
+      "linkedin_post_id": "urn:li:share:7478500664831164417",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
