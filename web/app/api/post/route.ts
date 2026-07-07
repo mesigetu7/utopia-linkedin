@@ -1,8 +1,8 @@
 /**
  * POST /api/post
  *
- * Posts to LinkedIn via Composio.
- * Composio manages the OAuth token automatically — no expiry handling needed.
+ * Posts to LinkedIn directly using LINKEDIN_PERSONAL_TOKEN (same token as post.py).
+ * No Composio dependency.
  *
  * Body: { text: string, account: "personal" | "company", queueId?: string }
  *
@@ -11,7 +11,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { postToLinkedIn } from '@/lib/composio'
+import { postToLinkedIn } from '@/lib/linkedin'
 import { deleteQueuePost, getContentLog } from '@/lib/github'
 import { Octokit } from '@octokit/rest'
 import type { Account } from '@/lib/types'
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'text and account are required' }, { status: 400 })
     }
 
-    // Post via Composio
+    // Post directly via LinkedIn API
     const result = await postToLinkedIn({ text, account })
 
     if (!result.success) {
