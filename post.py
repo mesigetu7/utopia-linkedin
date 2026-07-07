@@ -62,7 +62,7 @@ def already_posted_today(account):
 def get_account_creds(account):
     """Return (token, author_urn) for the given account.
     Both accounts use the personal token — company posts use the org URN.
-    The personal token works for company pages when the user is a page admin.
+    The personal token does work for company pages when the user is a page admin.
     """
     if account == "company":
         token = PERSONAL_TOKEN
@@ -124,6 +124,42 @@ def post_to_linkedin(text, token, author_urn, asset_urn=None):
         return None
 
 
+def parse_queue_file(raw_text):
+    """Strip [NAME:] and [DATE:] headers — return (name, scheduled_date, clean_content).
+
+    File format (all headers optional, never posted to LinkedIn):
+        [NAME: Stair detail — luxury villa]
+        [DATE: 2026-07-10]
+
+        The actual LinkedIn post content starts here...
+    """
+    import re
+    text = raw_text.strip()
+    name = None
+    scheduled_date = None
+
+    name_match = re.match(r'^\[NAME:\s*(.+?)\]\s*\n', text)
+    if name_match:
+        name = name_match.group(1).strip()
+        text = text[len(name_match.group(0)):]
+
+    date_match = re.match(r'^\[DATE:\s*(\d{4}-\d{2}-\d{2})\]\s*\n', text)
+    if date_match:
+        scheduled_date = date_match.group(1).strip()
+        text = text[len(date_match.group(0)):]
+
+    return name, scheduled_date, text.strip()
+
+
+def is_scheduled_for_today(scheduled_date):
+    """Return True if the post should run today.
+    No date = always eligible. Date set = only on that date or later."""
+    if not scheduled_date:
+        return True
+    today = date.today().strftime("%Y-%m-%d")
+    return scheduled_date <= today
+
+
 def get_queue_files(account="personal"):
     ensure_folders()
     folder = queue_folder(account)
@@ -170,7 +206,13 @@ def run_queue_mode(account="personal"):
 
     next_post_file = queue[0]
     with open(next_post_file, "r", encoding="utf-8") as f:
-        post_text = f.read().strip()
+        raw = f.read()
+
+    _, scheduled_date, post_text = parse_queue_file(raw)
+
+    if not is_scheduled_for_today(scheduled_date):
+        print(f"Post {os.path.basename(next_post_file)} is scheduled for {scheduled_date} — skipping today.")
+        return
 
     print("\n--- Next Queued Post ---")
     print(post_text)
