@@ -107,18 +107,14 @@ export default function QueuePage() {
       queueId: post.id,
     }
 
-    // If a photo is attached, route through the upload endpoint
-    let endpoint = '/api/post'
+    // If a photo is attached, include it — /api/post uploads it to LinkedIn
+    // directly and posts your text verbatim (no paid API, no rewriting).
     if (photo) {
-      endpoint = '/api/upload'
       body.imageBase64 = photo.base64
       body.imageMime = photo.mime
-      body.postNow = true
-      // Pre-fill caption with the already-written post content
-      body.captionIdea = post.content
     }
 
-    const res = await fetch(endpoint, {
+    const res = await fetch('/api/post', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

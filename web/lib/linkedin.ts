@@ -1,15 +1,19 @@
 /**
- * Direct LinkedIn posting — no Composio.
+ * Direct LinkedIn posting — no Composio, no paid cloud API.
  *
  * Uses the same tokens as post.py:
  *   LINKEDIN_PERSONAL_TOKEN — bearer token (works for both accounts)
  *   LINKEDIN_PERSON_URN     — author URN for personal posts
  *   LINKEDIN_COMPANY_ID     — org id, used as urn:li:organization:{id} for company posts
  *
- * Text-only posts via https://api.linkedin.com/v2/ugcPosts.
+ * Text posts and image posts (3-step asset upload) both go through
+ * https://api.linkedin.com/v2 directly. The caption is posted verbatim —
+ * whatever text you wrote is exactly what gets published.
  */
 
 import type { PostRequest, PostResult } from './types'
+
+const LINKEDIN_API = 'https://api.linkedin.com/v2'
 
 function getAuth(account: 'personal' | 'company'): { token: string; authorUrn: string } {
   const token = process.env.LINKEDIN_PERSONAL_TOKEN
@@ -26,40 +30,107 @@ function getAuth(account: 'personal' | 'company'): { token: string; authorUrn: s
   return { token, authorUrn: personUrn }
 }
 
+// ─── Image upload (3 steps) ──────────────────────────────────────────────────
+
+async function registerImageUpload(token: string, authorUrn: string) {
+  const res = await fetch(`${LINKEDIN_API}/assets?action=registerUpload`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'X-Restli-Protocol-Version': '2.0.0',
+    },
+    body: JSON.stringify({
+      registerUploadRequest: {
+        recipes: ['urn:li:digitalmediaRecipe:feedshare-image'],
+        owner: authorUrn,
+        serviceRelationships: [
+          { relationshipType: 'OWNER', identifier: 'urn:li:userGeneratedContent' },
+        ],
+      },
+    }),
+  })
+  if (!res.ok) throw new Error(`Register upload failed: ${res.status} ${await res.text()}`)
+  const data = await res.json()
+  return {
+    uploadUrl: data.value.uploadMechanism[
+      'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'
+    ].uploadUrl as string,
+    assetUrn: data.value.asset as string,
+  }
+}
+
+async function uploadImageBinary(uploadUrl: string, buffer: Buffer, mime: string, token: string) {
+  const res = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': mime },
+    body: buffer,
+  })
+  if (!res.ok) throw new Error(`Image binary upload failed: ${res.status}`)
+}
+
+// ─── ugcPosts payload ────────────────────────────────────────────────────────
+
+function buildPayload(authorUrn: string, text: string, assetUrn?: string) {
+  const shareContent: Record<string, unknown> = {
+    shareCommentary: { text },
+    shareMediaCategory: assetUrn ? 'IMAGE' : 'NONE',
+  }
+  if (assetUrn) {
+    shareContent.media = [
+      { status: 'READY', description: { text: '' }, media: assetUrn, title: { text: '' } },
+    ]
+  }
+  return {
+    author: authorUrn,
+    lifecycleState: 'PUBLISHED',
+    specificContent: { 'com.linkedin.ugc.ShareContent': shareContent },
+    visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' },
+  }
+}
+
 /**
- * Post text to LinkedIn using the personal access token directly.
- * Mirrors post.py's post_to_linkedin().
+ * Post to LinkedIn using the personal access token directly.
+ * If req.imageBase64 is provided, uploads the image first (3-step) and attaches it.
+ * The text is posted exactly as given — no rewriting, no AI.
  */
 export async function postToLinkedIn(req: PostRequest): Promise<PostResult> {
   try {
     const { token, authorUrn } = getAuth(req.account)
 
-    const payload = {
-      author: authorUrn,
-      lifecycleState: 'PUBLISHED',
-      specificContent: {
-        'com.linkedin.ugc.ShareContent': {
-          shareCommentary: { text: req.text },
-          shareMediaCategory: 'NONE',
-        },
-      },
-      visibility: {
-        'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
-      },
+    let assetUrn: string | undefined
+    if (req.imageBase64) {
+      const mime = req.imageMime || 'image/jpeg'
+      const base64Data = req.imageBase64.replace(/^data:[^;]+;base64,/, '')
+      const buffer = Buffer.from(base64Data, 'base64')
+
+      const reg = await registerImageUpload(token, authorUrn)
+      await uploadImageBinary(reg.uploadUrl, buffer, mime, token)
+      // Give LinkedIn a moment to process the asset before referencing it.
+      await new Promise(r => setTimeout(r, 2000))
+      assetUrn = reg.assetUrn
     }
 
-    const res = await fetch('https://api.linkedin.com/v2/ugcPosts', {
+    const res = await fetch(`${LINKEDIN_API}/ugcPosts`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
         'X-Restli-Protocol-Version': '2.0.0',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(buildPayload(authorUrn, req.text, assetUrn)),
     })
 
     if (res.status === 201) {
-      const postId = res.headers.get('x-restli-id') || ''
+      let postId = res.headers.get('x-restli-id') || ''
+      if (!postId) {
+        try {
+          const body = await res.json()
+          postId = (body?.id as string) || ''
+        } catch {
+          /* header-only response */
+        }
+      }
       return { success: true, postId }
     }
 
@@ -82,7 +153,7 @@ export async function checkLinkedInConnection(): Promise<boolean> {
   const token = process.env.LINKEDIN_PERSONAL_TOKEN
   if (!token) return false
   try {
-    const res = await fetch('https://api.linkedin.com/v2/userinfo', {
+    const res = await fetch(`${LINKEDIN_API}/userinfo`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     return res.ok

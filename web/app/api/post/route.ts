@@ -2,9 +2,15 @@
  * POST /api/post
  *
  * Posts to LinkedIn directly using LINKEDIN_PERSONAL_TOKEN (same token as post.py).
- * No Composio dependency.
+ * No Composio, no paid cloud API. The text is posted verbatim.
  *
- * Body: { text: string, account: "personal" | "company", queueId?: string }
+ * Body: {
+ *   text: string,
+ *   account: "personal" | "company",
+ *   queueId?: string,
+ *   imageBase64?: string,   // optional data URL — attaches an image
+ *   imageMime?: string,     // e.g. "image/jpeg"
+ * }
  *
  * If queueId is provided, the queue file is deleted from the repo after a
  * successful post and the post is appended to content_log.json.
@@ -19,18 +25,22 @@ import type { Account } from '@/lib/types'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { text, account, queueId } = body as {
+    const { text, account, queueId, imageBase64, imageMime } = body as {
       text: string
       account: Account
       queueId?: string
+      imageBase64?: string
+      imageMime?: string
     }
 
     if (!text || !account) {
       return NextResponse.json({ error: 'text and account are required' }, { status: 400 })
     }
 
-    // Post directly via LinkedIn API
-    const result = await postToLinkedIn({ text, account })
+    const hasImage = Boolean(imageBase64)
+
+    // Post directly via LinkedIn API (text verbatim, optional image)
+    const result = await postToLinkedIn({ text, account, imageBase64, imageMime })
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 })
@@ -53,9 +63,9 @@ export async function POST(request: Request) {
       log.posts.push({
         date: new Date().toISOString().slice(0, 16).replace('T', ' '),
         account,
-        pillar: 'queued',
+        pillar: hasImage ? 'image_post' : 'queued',
         hook: text.slice(0, 80),
-        has_image: false,
+        has_image: hasImage,
         linkedin_post_id: result.postId || '',
         views: 0,
         likes: 0,
