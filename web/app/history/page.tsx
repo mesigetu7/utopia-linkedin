@@ -1,6 +1,9 @@
 import { getContentLog } from '@/lib/github'
 import type { LogPost } from '@/lib/types'
 
+// Always read the live content log — never serve a build-time snapshot.
+export const dynamic = 'force-dynamic'
+
 function parseDate(d: string): Date {
   // Handles "YYYY-MM-DD" and "YYYY-MM-DD HH:MM"
   return new Date(d.replace(' ', 'T'))

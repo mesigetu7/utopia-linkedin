@@ -20,6 +20,17 @@ export default function QueuePage() {
   const photoRef = useRef<HTMLInputElement>(null)
   const [activePhotoId, setActivePhotoId] = useState<string | null>(null)
 
+  // Honor ?account=personal|company and ?open=<id> from the URL so dashboard
+  // links land on the right tab (and auto-expand a specific post).
+  const [pendingOpen, setPendingOpen] = useState<string | null>(null)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const acc = params.get('account')
+    if (acc === 'personal' || acc === 'company') setAccount(acc)
+    const open = params.get('open')
+    if (open) setPendingOpen(open)
+  }, [])
+
   const loadQueue = useCallback(async () => {
     setLoading(true)
     const res = await fetch(`/api/queue?account=${account}`)
@@ -29,6 +40,14 @@ export default function QueuePage() {
   }, [account])
 
   useEffect(() => { loadQueue() }, [loadQueue])
+
+  // Once posts load, auto-expand the post named in ?open= (matched by id or name).
+  useEffect(() => {
+    if (!pendingOpen || posts.length === 0) return
+    const target = posts.find(p => p.id === pendingOpen || p.name === pendingOpen)
+    if (target) openPost(target)
+    setPendingOpen(null)
+  }, [pendingOpen, posts])
 
   function openPost(post: QueuePost) {
     setOpenId(post.id)
@@ -163,7 +182,7 @@ export default function QueuePage() {
       </div>
 
       {/* Hidden photo input */}
-      <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhotoSelected} />
+      <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={onPhotoSelected} />
 
       {/* ── Post list ── */}
       {loading ? (

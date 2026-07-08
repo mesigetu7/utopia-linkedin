@@ -1,0 +1,12 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#0A66C2"/>
+  <!-- LinkedIn "in" mark -->
+  <g fill="#ffffff">
+    <rect x="12" y="17" width="9" height="9" rx="2.5"/>
+    <rect x="12" y="29" width="9" height="22" rx="1.5"/>
+    <path d="M25 51 L25 29 L33 29 L33 32 C35 30 37.5 29 40.5 29 C46 29 49 32.5 49 38.5 L49 51 L41 51 L41 39 C41 36 39.5 34.5 37 34.5 C34.5 34.5 33 36 33 39 L33 51 Z"/>
+  </g>
+  <!-- "P" (post) badge -->
+  <circle cx="50" cy="14" r="11" fill="#c8a96e"/>
+  <path d="M47 20 L47 9 L51.5 9 C55 9 55 14.5 51.5 14.5 L47 14.5" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

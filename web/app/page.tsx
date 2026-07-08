@@ -1,11 +1,20 @@
 /**
- * Dashboard — overview of queue status, recent posts, engagement.
+ * Dashboard — overview of queue status and recent posting activity.
+ * Activity only (no engagement metrics — LinkedIn personal analytics aren't
+ * available via the API).
  */
 import Link from 'next/link'
 import { listQueue, getContentLog } from '@/lib/github'
 
-function engagementScore(post: { likes: number; comments: number; shares: number; views: number }) {
-  return (post.comments * 4) + (post.shares * 3) + (post.likes * 1) + (post.views * 0.01)
+// Always read live queue + log data — never serve a build-time snapshot.
+export const dynamic = 'force-dynamic'
+
+function postedThisWeek(posts: { date: string }[]) {
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+  return posts.filter(p => {
+    const t = new Date(p.date).getTime()
+    return !isNaN(t) && t >= weekAgo
+  }).length
 }
 
 export default async function Dashboard() {
@@ -19,10 +28,7 @@ export default async function Dashboard() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 5)
 
-  const totalEngagement = log.posts.reduce((s, p) => s + engagementScore(p), 0)
-  const avgEngagement = log.posts.length > 0
-    ? Math.round(totalEngagement / log.posts.length)
-    : 0
+  const thisWeek = postedThisWeek(log.posts)
 
   return (
     <div className="space-y-8">
@@ -39,7 +45,7 @@ export default async function Dashboard() {
         <StatCard label="Personal queue" value={String(personalQueue.length)} suffix="posts" />
         <StatCard label="Company queue" value={String(companyQueue.length)} suffix="posts" />
         <StatCard label="Total posted" value={String(log.posts.length)} suffix="all time" />
-        <StatCard label="Avg engagement" value={String(avgEngagement)} suffix="score" />
+        <StatCard label="This week" value={String(thisWeek)} suffix="posted" />
       </div>
 
       {/* Queue health */}
@@ -48,12 +54,14 @@ export default async function Dashboard() {
           account="Personal"
           count={personalQueue.length}
           href="/queue?account=personal"
+          firstPostId={personalQueue[0]?.id || null}
           nextPost={personalQueue[0]?.content.split('\n')[0] || null}
         />
         <QueueStatus
           account="Company"
           count={companyQueue.length}
           href="/queue?account=company"
+          firstPostId={companyQueue[0]?.id || null}
           nextPost={companyQueue[0]?.content.split('\n')[0] || null}
         />
       </div>
@@ -69,7 +77,11 @@ export default async function Dashboard() {
           </div>
           <div className="space-y-3">
             {recentPosts.map((p, i) => (
-              <div key={i} className="bg-[#111] border border-[#1e1e1e] rounded-lg p-4">
+              <Link
+                key={i}
+                href="/history"
+                className="block bg-[#111] border border-[#1e1e1e] rounded-lg p-4 hover:border-[#2a2a2a] transition-colors"
+              >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-[#ccc] line-clamp-2 leading-relaxed">{p.hook}</p>
@@ -82,16 +94,13 @@ export default async function Dashboard() {
                         {p.account}
                       </span>
                       <span className="text-xs text-[#555]">{p.date}</span>
+                      {p.has_image && (
+                        <span className="text-xs text-[#c8a96e]">📷 photo</span>
+                      )}
                     </div>
                   </div>
-                  {(p.likes > 0 || p.comments > 0) && (
-                    <div className="flex items-center gap-3 text-xs text-[#666] shrink-0">
-                      <span>{p.likes} likes</span>
-                      <span>{p.comments} comments</span>
-                    </div>
-                  )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -127,13 +136,16 @@ function StatCard({ label, value, suffix }: { label: string; value: string; suff
 }
 
 function QueueStatus({
-  account, count, href, nextPost
+  account, count, href, firstPostId, nextPost
 }: {
-  account: string; count: number; href: string; nextPost: string | null
+  account: string; count: number; href: string; firstPostId: string | null; nextPost: string | null
 }) {
   const status = count === 0 ? 'empty' : count <= 2 ? 'low' : 'healthy'
   const statusColor = { empty: 'text-red-400', low: 'text-yellow-400', healthy: 'text-green-400' }[status]
   const statusText = { empty: 'Empty — needs posts', low: 'Running low', healthy: 'Healthy' }[status]
+
+  // If there's a queued post, clicking the preview opens it directly.
+  const previewHref = firstPostId ? `${href}&open=${encodeURIComponent(firstPostId)}` : href
 
   return (
     <div className="bg-[#111] border border-[#1e1e1e] rounded-lg p-4">
@@ -141,9 +153,11 @@ function QueueStatus({
         <span className="text-sm font-medium text-[#ccc]">{account}</span>
         <span className={`text-xs ${statusColor}`}>{statusText}</span>
       </div>
-      <p className="text-[#555] text-sm line-clamp-2 min-h-[40px]">
-        {nextPost || 'No posts queued'}
-      </p>
+      <Link href={previewHref} className="block group">
+        <p className="text-[#555] group-hover:text-[#888] text-sm line-clamp-2 min-h-[40px] transition-colors">
+          {nextPost || 'No posts queued'}
+        </p>
+      </Link>
       <Link
         href={href}
         className="inline-block mt-3 text-xs text-[#c8a96e] hover:underline"
