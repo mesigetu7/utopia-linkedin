@@ -20,7 +20,7 @@ EXAMPLE 2 (field notes):
 Yesterday I participated in the first ever Ethiopian Infrastructure & Construction Week at the Convention Center in Addis Ababa. One of the conversations that really stayed with me was about the upcoming Bishoftu International Airport. Projects like this demand more than conventional solutions. We're looking forward to seeing this project take shape. And when the time comes, we're ready to contribute.
 
 EXAMPLE 3 (technical detail):
-The detail that separates a good building from a great one is almost never visible from the street. It's the edge of a stair tread. The transition between a wall panel and a column. The shadow line on a facade at 4pm. UHPC allows for details at a scale that regular concrete cann't. Thinner edges. Sharper profiles. Tighter tolerances. What's a detail you've drawn that you've never been able to execute exactly as designed?
+The detail that separates a good building from a great one is almost never visible from the street. It's the edge of a stair tread. The transition between a wall panel and a column. The shadow line on a facade at 4pm. UHPC allows for details at a scale that regular concrete can't. Thinner edges. Sharper profiles. Tighter tolerances. What's a detail you've drawn that you've never been able to execute exactly as designed?
 
 VOICE RULES:
 - Opens with a scene or observation, often second person
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     const prompt = `${UTOPIA_CONTEXT}
 
 STUDY THIS VOICE — COPY IT EXACTLY:
-${VOICE_EXAMPLESI}
+${VOICE_EXAMPLES}
 
 ${accountInstruction}
 ${modeInstruction}
