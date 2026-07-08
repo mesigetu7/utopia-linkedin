@@ -307,6 +307,18 @@
       "likes": 0,
       "comments": 0,
       "shares": 0
+    },
+    {
+      "date": "2026-07-08 22:50",
+      "account": "personal",
+      "pillar": "image_post",
+      "hook": "There's a moment right before you demold a piece when you don't actually know wh",
+      "has_image": true,
+      "linkedin_post_id": "urn:li:share:7480755256335933440",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
     }
   ]
 }
