@@ -140,12 +140,12 @@ export default function UploadPage() {
           <p className="text-[#ccc] text-sm font-medium">Tap to take a photo</p>
           <p className="text-[#444] text-xs mt-1">or choose from camera roll</p>
           <p className="text-[#333] text-xs mt-3 hidden md:block">On desktop: drop a file here</p>
-          {/* capture="environment" opens the rear camera directly on mobile */}
+          {/* No capture attribute — lets mobile show Photo Library, Take Photo,
+              and Choose File instead of forcing the camera. */}
           <input
             ref={fileRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            capture="environment"
             className="hidden"
             onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]) }}
           />
