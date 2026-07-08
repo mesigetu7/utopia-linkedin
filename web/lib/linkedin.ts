@@ -64,7 +64,7 @@ async function uploadImageBinary(uploadUrl: string, buffer: Buffer, mime: string
   const res = await fetch(uploadUrl, {
     method: 'PUT',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': mime },
-    body: buffer,
+    body: new Uint8Array(buffer),
   })
   if (!res.ok) throw new Error(`Image binary upload failed: ${res.status}`)
 }
