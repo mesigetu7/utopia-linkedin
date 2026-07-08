@@ -42,10 +42,10 @@ export default async function Dashboard() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Personal queue" value={String(personalQueue.length)} suffix="posts" />
-        <StatCard label="Company queue" value={String(companyQueue.length)} suffix="posts" />
-        <StatCard label="Total posted" value={String(log.posts.length)} suffix="all time" />
-        <StatCard label="This week" value={String(thisWeek)} suffix="posted" />
+        <StatCard label="Personal queue" value={String(personalQueue.length)} suffix="posts" href="/queue?account=personal" />
+        <StatCard label="Company queue" value={String(companyQueue.length)} suffix="posts" href="/queue?account=company" />
+        <StatCard label="Total posted" value={String(log.posts.length)} suffix="all time" href="/history" />
+        <StatCard label="This week" value={String(thisWeek)} suffix="posted" href="/history" />
       </div>
 
       {/* Queue health */}
@@ -125,14 +125,25 @@ export default async function Dashboard() {
   )
 }
 
-function StatCard({ label, value, suffix }: { label: string; value: string; suffix: string }) {
-  return (
-    <div className="bg-[#111] border border-[#1e1e1e] rounded-lg p-4">
+function StatCard({ label, value, suffix, href }: { label: string; value: string; suffix: string; href?: string }) {
+  const inner = (
+    <>
       <p className="text-xs text-[#555] mb-1">{label}</p>
       <p className="text-2xl font-semibold text-[#e8e8e8]">{value}</p>
       <p className="text-xs text-[#444] mt-0.5">{suffix}</p>
-    </div>
+    </>
   )
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="block bg-[#111] border border-[#1e1e1e] rounded-lg p-4 hover:border-[#c8a96e]/40 hover:bg-white/[0.02] transition-colors"
+      >
+        {inner}
+      </Link>
+    )
+  }
+  return <div className="bg-[#111] border border-[#1e1e1e] rounded-lg p-4">{inner}</div>
 }
 
 function QueueStatus({
