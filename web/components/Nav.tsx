@@ -7,7 +7,7 @@ const links = [
   { href: '/queue',   label: 'Queue'     },
   { href: '/write',   label: 'Write'     },
   { href: '/upload',  label: 'Upload'    },
-  { href: '/history', label: 'History'   },
+  { href: '/history', label: 'Performance' },
 ]
 
 export default function Nav() {
